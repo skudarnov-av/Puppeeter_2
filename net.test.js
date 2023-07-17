@@ -1,12 +1,15 @@
-const { clickElement, putText, getText } = require("./lib/commands.js");
-const { generateName } = require("./lib/util.js");
-const puppeteer = require("puppeteer");
-
+const {
+  clickElement,
+  getText,
+  getValueForDisabled,
+} = require("./lib/commands.js");
 let page;
 
 beforeEach(async () => {
   page = await browser.newPage();
-  await page.setDefaultNavigationTimeout(0);
+  await page.goto("http://qamid.tmweb.ru/client/index.php");
+  await clickElement(page, "a.page-nav__day:nth-of-type(7)");
+  await clickElement(page, "a.movie-seances__time");
 });
 
 afterEach(() => {
@@ -14,46 +17,42 @@ afterEach(() => {
 });
 
 describe("Successful booking", () => {
-  beforeEach(async () => {
-    page = await browser.newPage();
-    await page.goto("http://qamid.tmweb.ru/client/index.php");
+  test("Should book 1 ticket'", async () => {
+    await clickElement(
+      page,
+      ".buying-scheme__wrapper > :nth-child(1) > :nth-child(2)"
+    );
+    await clickElement(page, ".acceptin-button");
+    await getText(page, ".ticket__hint");
+    await clickElement(page, ".acceptin-button");
+    const actual = await getText(page, ".ticket__hint");
+    expect(actual).toEqual(
+      "Покажите QR-код нашему контроллеру для подтверждения бронирования."
+    );
   });
-  test("Movie Selection", async () => {
-    await page.click(
-      "body > nav > a.page-nav__day.page-nav__day_chosen > span.page-nav__day-week"
+
+  test("Should book 2 tickets'", async () => {
+    await clickElement(
+      page,
+      ".buying-scheme__wrapper > :nth-child(1) > :nth-child(3)"
     );
-    await page.waitForSelector("span");
-    await page.click(
-      "body > main > section:nth-child(1) > div.movie-seances__hall > ul"
+    await clickElement(
+      page,
+      ".buying-scheme__wrapper > :nth-child(1) > :nth-child(4)"
     );
-    await page.waitForSelector("li");
-    const expected = "Начало сеанса: 10:00";
-  }, 70000);
-  test("Movie Choice for Tomorrow", async () => {
-    await page.click(
-      "body > nav > a.page-nav__day.page-nav__day_weekend.page-nav__day_chosen > span.page-nav__day-number"
+    await clickElement(page, ".acceptin-button");
+    await getText(page, ".ticket__hint");
+    await clickElement(page, ".acceptin-button");
+    const actual = await getText(page, ".ticket__hint");
+    expect(actual).toEqual(
+      "Покажите QR-код нашему контроллеру для подтверждения бронирования."
     );
-    await page.waitForSelector("span");
-    await page.click(
-      "body > main > section:nth-child(2) > div:nth-child(2) > ul > li"
-    );
-    await page.waitForSelector("li");
-    const expected = "Начало сеанса: 12:00";
-  });
-});
-describe("Unsuccessful booking", () => {
-  beforeEach(async () => {
-    page = await browser.newPage();
-    await page.goto("http://qamid.tmweb.ru/client/hall.php");
-  });
-  test("Bad booking", async () => {
-    await page.click(
-      "body > main > section > div.buying-scheme > div.buying-scheme__wrapper"
-    );
-    await page.waitForSelector("span");
-    await page.click("body > main > section > button");
-    await page.waitForSelector("button");
-    const expected = "ВЫ ВЫБРАЛИ БИЛЕТЫ:";
   });
 });
 
+describe("Unsuccessful booking", () => {
+  test("Should not book without a seat", async () => {
+    const actual = await getValueForDisabled(page, ".acceptin-button");
+    await expect(actual).toContain("true");
+  });
+});

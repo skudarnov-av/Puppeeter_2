@@ -1,12 +1,13 @@
 {
-  "name": "jsaqa_3_3",
+  "name": "puppeteer-2",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --watchAll --detectOpenHandles",
     "cucumber": "cucumber-js"
   },
+  "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {

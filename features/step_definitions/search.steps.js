@@ -2,7 +2,12 @@ const puppeteer = require("puppeteer");
 const chai = require("chai");
 const expect = chai.expect;
 const { Given, When, Then, Before, After } = require("cucumber");
-const { putText, getText } = require("../../lib/commands.js");
+const {  clickElement,
+  getText,
+  getValueForDisabled,
+} = require("../../lib/commands.js");
+const { setDefaultTimeout } = require("@cucumber/cucumber");
+setDefaultTimeout(60 * 1000);
 
 Before(async function () {
   const browser = await puppeteer.launch({ headless: false, slowMo: 50 });
@@ -31,6 +36,31 @@ When("the user selects a movie", async () => {
     "body > main > section:nth-child(1) > div.movie-seances__hall > ul"
   );
   await page.waitForSelector("li");
+});
+
+When("user selects time", async function () {
+  await clickElement(this.page, "a.movie-seances__time");
+});
+
+When("user selects {string} row and seat", async function (string) {
+  await clickElement(
+    this.page,
+    `.buying-scheme__wrapper > :nth-child(${string}) > :nth-child(${string})`
+  );
+});
+
+When("user clicks button 'Забронировать'", async function () {
+  await clickElement(this.page, ".acceptin-button");
+});
+
+When("user clicks button 'Получить код бронирования'", async function () {
+  await clickElement(this.page, ".acceptin-button");
+});
+
+Then("user sees text {string}", async function (string) {
+  const actual = await getText(this.page, ".ticket__hint");
+  const expected = await string;
+  expect(actual).contains(expected);
 });
 
 Then("the user sees the movie session starting at 10:00", async () => {
