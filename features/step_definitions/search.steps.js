@@ -22,9 +22,9 @@ After(async function () {
   }
 });
 
-Given("the user is on the home page", async () => {
-  page = await browser.newPage();
-  await page.goto("http://qamid.tmweb.ru/client/index.php");
+Given("user is on {string} page", async function (string) {
+  return await this.page.goto(`http://qamid.tmweb.ru${string}`, {
+    setTimeout: 20000,
 });
 
 When("the user selects a movie", async () => {
